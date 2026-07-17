@@ -1,0 +1,74 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+}
+
+body, html {
+    height: 100%;
+    overflow: hidden;
+    background-color: #1e1e1e;
+}
+
+#app-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+#toolbar {
+    width: 250px;
+    background-color: #252526;
+    color: #cccccc;
+    padding: 20px;
+    border-right: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#toolbar h2 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    color: #858585;
+}
+
+.tool-btn {
+    background-color: #333333;
+    color: white;
+    border: 1px solid #444;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s;
+}
+
+.tool-btn:hover {
+    background-color: #094771;
+    border-color: #007fd4;
+}
+
+.tool-btn:active {
+    background-color: #007fd4;
+    border-color: #007fd4;
+}
+
+#workspace {
+    flex-grow: 1;
+    position: relative;
+    background-color: #1e1e1e;
+}
+
+/* draw via js for scaling and canvas fill */
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+}
+
