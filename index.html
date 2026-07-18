@@ -1,28 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="wight=device-width, inital-scale=1.0">
-        <title>Simple circuits</title>
-        <link rel="stylesheet" href="style.css"> 
-    </head>
-    <body>
-        <div id="app-container">
-            <!-- Side toolbar-->
-             <div id="toolbar">
-                <h2>Components</h2>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SimpleCircuit | Logic Simulator</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-container">
+        <!-- Sidebar & Branding -->
+        <aside id="sidebar">
+            <div id="brand">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="14" width="8" height="8" rx="2" ry="2"></rect>
+                    <path d="M14 18h6"></path>
+                    <path d="M10 18h4"></path>
+                    <path d="M10 6h12"></path>
+                    <rect x="2" y="2" width="8" height="8" rx="2" ry="2"></rect>
+                    <path d="M14 6v12"></path>
+                </svg>
+                <h1>SimpleCircuit</h1>
+            </div>
+
+            <div class="sidebar-section">
+                <h2>Project Files</h2>
+                <div class="file-group">
+                    <button id="btn-save" class="file-btn">Export</button>
+                    <button id="btn-load" class="file-btn">Import</button>
+                    <button id="btn-clear" class="file-btn alert-btn">Clear</button>
+                    <input type="file" id="file-input" style="display: none;" accept=".json">
+                </div>
+                <button id="btn-tutorial" class="action-btn" style="margin-top: 10px; width: 100%;">Tutorial & Help</button>
+            </div>
+
+            <!-- Testbench Section -->
+            <div class="sidebar-section highlight-section">
+                <h2>VLSI Testbench</h2>
+                <select id="challenge-select" class="dropdown">
+                    <option value="none">-- Select a Challenge --</option>
+                    <option value="not">1. Build a NOT from NAND</option>
+                    <option value="half-adder">2. Build a Half-Adder</option>
+                    <option value="xor">3. Build XOR from basic gates</option>
+                </select>
+                <button id="btn-load-challenge" class="file-btn" style="margin-top: 8px; width: 100%;">Load Challenge Pins</button>
+                <button id="btn-run-test" class="action-btn" style="margin-top: 8px; width: 100%; display: none;">Run Diagnostics</button>
+            </div>
+
+            <div class="sidebar-section">
+                <h2>I/O Blocks</h2>
+                <button class="tool-btn" data-type="INPUT"><span class="icon">▧</span> Switch (Input)</button>
+                <button class="tool-btn" data-type="OUTPUT"><span class="icon">◉</span> LED (Output)</button>
+            </div>
+
+            <div class="sidebar-section">
+                <h2>Logic Gates</h2>
                 <button class="tool-btn" data-type="AND">AND Gate</button>
+                <button class="tool-btn" data-type="NAND">NAND Gate</button>
                 <button class="tool-btn" data-type="OR">OR Gate</button>
+                <button class="tool-btn" data-type="NOR">NOR Gate</button>
+                <button class="tool-btn" data-type="XOR">XOR Gate</button>
+                <button class="tool-btn" data-type="XNOR">XNOR Gate</button>
                 <button class="tool-btn" data-type="NOT">NOT Gate</button>
-                <button class="tool-btn" data-type="Wire">Draw Wire</button>
-             </div>
+                <button class="tool-btn active" data-type="WIRE" style="margin-top: 10px; border-color: var(--wire-active);">
+                    <span class="icon">⤡</span> Draw Wire Mode
+                </button>
+            </div>
+        </aside>
 
-             <!-- Workspace-main-->
-             <div id="workspace">
-                <canvas id="circuitCanvas"></canvas>
-             </div>
-        </div>
+        <!-- Main Workspace -->
+        <main id="workspace">
+            <canvas id="circuitCanvas"></canvas>
+            
+            <!-- Tutorial Modal Overlay -->
+            <div id="tutorial-overlay" class="hidden">
+                <div class="tutorial-card">
+                    <h3 id="tut-title">Welcome to SimpleCircuit</h3>
+                    <p id="tut-text">Let's walk through how to build your first logic circuit.</p>
+                    <div class="tut-controls">
+                        <button id="tut-skip" class="tut-btn secondary">Skip</button>
+                        <span id="tut-progress">1/4</span>
+                        <button id="tut-next" class="tut-btn primary">Next</button>
+                    </div>
+                </div>
+            </div>
 
-        <script src="script.js"></script>
-    </body>
+            <!-- Test Results Modal -->
+            <div id="test-overlay" class="hidden">
+                <div class="tutorial-card test-card">
+                    <h3 id="test-title">Diagnostic Results</h3>
+                    <div id="test-results" class="terminal-text">Running truth table...</div>
+                    <button id="test-close" class="tut-btn secondary" style="margin-top: 15px; width: 100%;">Close</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
 </html>
