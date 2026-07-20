@@ -47,24 +47,59 @@
                 <button id="btn-run-test" class="action-btn" style="margin-top: 8px; width: 100%; display: none;">Run Diagnostics</button>
             </div>
 
+            <!-- Selection Info Panel -->
+            <div id="selection-panel" class="sidebar-section" style="display: none; background-color: rgba(0, 240, 255, 0.05); border-bottom: 1px solid rgba(0, 240, 255, 0.2);">
+                <h2>Selection Info</h2>
+                <div id="selection-text" style="font-size: 11px; color: var(--text-main); margin-bottom: 8px;">No selection</div>
+                
+                <!-- Label editor for selected items -->
+                <div id="selection-label-container" style="margin-bottom: 12px;">
+                    <label for="selection-label-input" style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 700;">Custom Label / Text</label>
+                    <input type="text" id="selection-label-input" placeholder="Enter custom label..." style="width: 100%; padding: 8px; font-size: 11px; border-radius: 4px; border: 1px solid var(--border); background-color: var(--bg-main); color: var(--text-main); font-weight: 500;">
+                </div>
+
+                <button id="btn-delete-selected" class="file-btn alert-btn" style="width: 100%;">Delete Selected</button>
+            </div>
+
             <div class="sidebar-section">
                 <h2>I/O Blocks</h2>
-                <button class="tool-btn" data-type="INPUT"><span class="icon">▧</span> Switch (Input)</button>
-                <button class="tool-btn" data-type="OUTPUT"><span class="icon">◉</span> LED (Output)</button>
+                <button class="tool-btn" data-type="INPUT"><span class="icon" style="color: #60a5fa;">▧</span> Switch (Input)</button>
+                <button class="tool-btn" data-type="OUTPUT"><span class="icon" style="color: #fca5a5;">◉</span> LED (Output)</button>
             </div>
 
             <div class="sidebar-section">
                 <h2>Logic Gates</h2>
-                <button class="tool-btn" data-type="AND">AND Gate</button>
-                <button class="tool-btn" data-type="NAND">NAND Gate</button>
-                <button class="tool-btn" data-type="OR">OR Gate</button>
-                <button class="tool-btn" data-type="NOR">NOR Gate</button>
-                <button class="tool-btn" data-type="XOR">XOR Gate</button>
-                <button class="tool-btn" data-type="XNOR">XNOR Gate</button>
-                <button class="tool-btn" data-type="NOT">NOT Gate</button>
+                <button class="tool-btn" data-type="AND"><span class="icon" style="color: #38bdf8;">⋀</span> AND Gate <span style="margin-left: auto; font-family: monospace; font-size: 10px; color: var(--text-muted);">&amp;</span></button>
+                <button class="tool-btn" data-type="NAND"><span class="icon" style="color: #0284c7;">⊼</span> NAND Gate <span style="margin-left: auto; font-family: monospace; font-size: 10px; color: var(--text-muted);">⊼</span></button>
+                <button class="tool-btn" data-type="OR"><span class="icon" style="color: #a78bfa;">⋁</span> OR Gate <span style="margin-left: auto; font-family: monospace; font-size: 10px; color: var(--text-muted);">≥1</span></button>
+                <button class="tool-btn" data-type="NOR"><span class="icon" style="color: #7c3aed;">⊽</span> NOR Gate <span style="margin-left: auto; font-family: monospace; font-size: 10px; color: var(--text-muted);">⊽</span></button>
+                <button class="tool-btn" data-type="XOR"><span class="icon" style="color: #f472b6;">⊻</span> XOR Gate <span style="margin-left: auto; font-family: monospace; font-size: 10px; color: var(--text-muted);">⊕</span></button>
+                <button class="tool-btn" data-type="XNOR"><span class="icon" style="color: #db2777;">⊙</span> XNOR Gate <span style="margin-left: auto; font-family: monospace; font-size: 10px; color: var(--text-muted);">⊙</span></button>
+                <button class="tool-btn" data-type="NOT"><span class="icon" style="color: #fb923c;">¬</span> NOT Gate <span style="margin-left: auto; font-family: monospace; font-size: 10px; color: var(--text-muted);">1</span></button>
                 <button class="tool-btn active" data-type="WIRE" style="margin-top: 10px; border-color: var(--wire-active);">
                     <span class="icon">⤡</span> Draw Wire Mode
                 </button>
+                <button class="tool-btn" data-type="DELETE" style="margin-top: 5px; border-color: var(--alert); color: var(--alert);">
+                    <span class="icon">🗑</span> Delete Mode
+                </button>
+            </div>
+
+            <div class="sidebar-section">
+                <h2>Documentation</h2>
+                <button class="tool-btn" data-type="TEXT"><span class="icon" style="color: #e2e8f0;">📝</span> Text Label</button>
+                <button class="tool-btn" data-type="STICKY"><span class="icon" style="color: #fef08a;">📌</span> Sticky Note</button>
+            </div>
+
+            <!-- Shortcuts Cheat Sheet -->
+            <div class="sidebar-section shortcut-section">
+                <h2>Shortcuts & Controls</h2>
+                <div class="shortcut-grid">
+                    <div class="shortcut-row"><kbd>Drag</kbd><span>Move Components</span></div>
+                    <div class="shortcut-row"><kbd>Box Drag</kbd><span>Select Multiple</span></div>
+                    <div class="shortcut-row"><kbd>Ctrl + Z</kbd><span>Undo State</span></div>
+                    <div class="shortcut-row"><kbd>Delete</kbd><span>Delete Selected</span></div>
+                    <div class="shortcut-row"><kbd>Right Click</kbd><span>Quick Erase</span></div>
+                </div>
             </div>
         </aside>
 
@@ -94,6 +129,17 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Beautiful Glassmorphism Context Menu -->
+    <div id="custom-context-menu" class="hidden-menu">
+        <div class="menu-item" data-action="add-text"><span class="menu-icon">📝</span> Add Text Label</div>
+        <div class="menu-item" data-action="add-sticky"><span class="menu-icon">📌</span> Add Sticky Note</div>
+        <div class="menu-separator"></div>
+        <div class="menu-item" data-action="clear-selection"><span class="menu-icon">✨</span> Clear Selection</div>
+        <div class="menu-item" data-action="undo"><span class="menu-icon">↩️</span> Undo Action</div>
+        <div class="menu-separator"></div>
+        <div class="menu-item alert-item" data-action="clear-all"><span class="menu-icon">🗑</span> Clear Circuit</div>
     </div>
     
     <script src="script.js"></script>
