@@ -1,0 +1,15 @@
+{
+  "name": "simple-circuit",
+  "version": "1.0.0",
+  "description": "SimpleCircuit | Logic Simulator",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "build": "mkdir -p dist && cp index.html script.js style.css dist/",
+    "lint": "echo 'No linting required'"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "SimpleCircuit",
+  "description": "A basic logic circuit simulator that runs entirely in your browser.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
