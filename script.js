@@ -4,7 +4,7 @@ const ctx = canvas.getContext('2d');
 let components = [];
 let wires = [];
 let currentTool = 'AND';
-let activeWireStartPin = null;
+let activeWireStartPin = null; // Stores the first clicked pin ID
 let currentMousePos = { x: 0, y: 0 };
 
 function resizeCanvas() {
@@ -33,7 +33,7 @@ class Component {
         this.y = y;
         this.type = type;
         this.id = id || type + '_' + Math.random().toString(36).substr(2, 9);
-        this.label = label; // Used for Testbench naming
+        this.label = label;
         this.width = 60;
         this.height = 40;
         this.pins = [];
@@ -87,7 +87,6 @@ class Component {
         const x = this.x;
         const y = this.y;
 
-        // Draw Pins
         this.pins.forEach(pin => {
             ctx.beginPath();
             ctx.strokeStyle = pin.value ? '#34d399' : '#334155';
@@ -100,13 +99,20 @@ class Component {
             }
             ctx.stroke();
 
+            // Highlight the pin if it is currently selected for wiring
+            if (activeWireStartPin === this.id + '_' + pin.id) {
+                ctx.fillStyle = '#10b981';
+                ctx.beginPath();
+                ctx.arc(pin.absoluteX, pin.absoluteY, 7, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
             ctx.fillStyle = pin.value ? '#34d399' : '#1e293b';
             ctx.beginPath();
             ctx.arc(pin.absoluteX, pin.absoluteY, 4, 0, Math.PI * 2);
             ctx.fill(); ctx.stroke();
         });
 
-        // Draw Component Body
         ctx.strokeStyle = '#94a3b8';
         ctx.fillStyle = '#1e293b';
 
@@ -166,7 +172,6 @@ class Component {
             drawBubble(x + 49, y + 20);
         }
 
-        // Draw Label if it exists (for Testbench)
         if (this.label) {
             ctx.fillStyle = '#cbd5e1';
             ctx.font = 'bold 12px "Fira Code", monospace';
@@ -182,7 +187,6 @@ function drawBubble(cx, cy) {
 }
 
 function propagateCircuit() {
-    // Run multiple passes to allow signals to propagate through deep gate networks
     for (let iterations = 0; iterations < 15; iterations++) {
         wires.forEach(wire => {
             const startPin = findPinById(wire.startPinId);
@@ -200,31 +204,54 @@ function findPinById(id) {
     return null;
 }
 
-// --- Interaction Logic ---
+// --- Modified Two-Click Interaction Logic ---
 canvas.addEventListener('mousedown', (e) => {
     const rect = canvas.getBoundingClientRect();
     const mX = e.clientX - rect.left;
     const mY = e.clientY - rect.top;
 
     for (let c of components) {
-        // Toggle inputs
-        if (c.type === 'INPUT' && mX >= c.x + 10 && mX <= c.x + 50 && mY >= c.y && mY <= c.y + 40) {
+        // 1. Toggle inputs (only if not wiring)
+        if (!activeWireStartPin && c.type === 'INPUT' && mX >= c.x + 10 && mX <= c.x + 50 && mY >= c.y && mY <= c.y + 40) {
             c.state = c.state === 1 ? 0 : 1;
             c.pins[0].value = c.state;
             propagateCircuit();
             return;
         }
-        // Start wire
+
+        // 2. Pin Selection (Two-Click System)
         for (let p of c.pins) {
             const dist = Math.hypot(p.absoluteX - mX, p.absoluteY - mY);
-            if (dist < 8 && currentTool === 'WIRE') {
-                activeWireStartPin = c.id + '_' + p.id;
+            if (dist < 10 && currentTool === 'WIRE') {
+                const clickedPinId = c.id + '_' + p.id;
+
+                if (!activeWireStartPin) {
+                    // First click: select this pin
+                    activeWireStartPin = clickedPinId;
+                } else {
+                    // Second click: try to connect
+                    const startPin = findPinById(activeWireStartPin);
+                    if (activeWireStartPin !== clickedPinId && startPin && startPin.type !== p.type) {
+                        wires.push({
+                            startPinId: startPin.type === 'OUT' ? activeWireStartPin : clickedPinId,
+                            endPinId: startPin.type === 'IN' ? activeWireStartPin : clickedPinId
+                        });
+                        propagateCircuit();
+                    }
+                    activeWireStartPin = null; // Reset selection
+                }
                 return;
             }
         }
     }
 
-    // Place component
+    // Cancel selection if you click on the empty background while wiring
+    if (activeWireStartPin && currentTool === 'WIRE') {
+        activeWireStartPin = null;
+        return;
+    }
+
+    // 3. Place component
     if (currentTool !== 'WIRE') {
         const snapX = Math.round((mX - 30) / 20) * 20;
         const snapY = Math.round((mY - 20) / 20) * 20;
@@ -239,36 +266,12 @@ canvas.addEventListener('mousemove', (e) => {
     currentMousePos.y = e.clientY - rect.top;
 });
 
-canvas.addEventListener('mouseup', (e) => {
-    if (!activeWireStartPin) return;
-    const rect = canvas.getBoundingClientRect();
-    const mX = e.clientX - rect.left;
-    const mY = e.clientY - rect.top;
-
-    for (let c of components) {
-        for (let p of c.pins) {
-            const dist = Math.hypot(p.absoluteX - mX, p.absoluteY - mY);
-            if (dist < 8) {
-                const targetPinId = c.id + '_' + p.id;
-                const startPin = findPinById(activeWireStartPin);
-                if (activeWireStartPin !== targetPinId && startPin && startPin.type !== p.type) {
-                    wires.push({
-                        startPinId: startPin.type === 'OUT' ? activeWireStartPin : targetPinId,
-                        endPinId: startPin.type === 'IN' ? activeWireStartPin : targetPinId
-                    });
-                    propagateCircuit();
-                }
-            }
-        }
-    }
-    activeWireStartPin = null;
-});
-
 document.querySelectorAll('.tool-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
         document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
         e.currentTarget.classList.add('active'); 
         currentTool = e.currentTarget.dataset.type;
+        activeWireStartPin = null; // Reset selection if switching tools
     });
 });
 
@@ -300,6 +303,7 @@ function render() {
         }
     });
 
+    // Draw routing guideline from selected pin to cursor position
     if (activeWireStartPin) {
         const p1 = findPinById(activeWireStartPin);
         if (p1) {
@@ -361,7 +365,7 @@ document.getElementById('file-input').addEventListener('change', (e) => {
 const tutData = [
     { title: "Welcome to SimpleCircuit", text: "This is a gate-level simulator. Let's learn how to design logic circuits." },
     { title: "Placing Components", text: "1. Select a tool from the sidebar (like a Switch or an AND gate).<br>2. Click anywhere on the grid canvas to place it." },
-    { title: "Wiring Nodes", text: "1. Select the 'Draw Wire Mode' at the bottom of the sidebar.<br>2. Click and drag from an output node (right side of a gate) to an input node (left side)." },
+    { title: "Wiring Nodes", text: "1. Select the 'Draw Wire Mode' at the bottom of the sidebar.<br>2. Click once on an origin pin, then click a second time on the target pin to connect them." },
     { title: "Running the Simulation", text: "Click directly on any 'Switch (Input)' block on your canvas to toggle it between 0 and 1. Watch the signal flow!" }
 ];
 
@@ -403,10 +407,7 @@ tutSkip.addEventListener('click', () => {
     overlay.classList.add('hidden');
 });
 
-// ==========================================
-// AUTOMATED TESTBENCH ENGINE
-// ==========================================
-
+// --- Testbench ---
 const testbenchChallenges = {
     'not': {
         inputs: ['A'], outputs: ['Out'],
@@ -454,12 +455,10 @@ document.getElementById('btn-load-challenge').addEventListener('click', () => {
     activeChallenge = testbenchChallenges[sel];
     components = []; wires = []; activeWireStartPin = null;
 
-    // Spawn Input Blocks
     activeChallenge.inputs.forEach((name, idx) => {
         components.push(new Component(100, 100 + (idx * 80), 'INPUT', `IN_${name}`, `Input ${name}`));
     });
 
-    // Spawn Output Blocks
     activeChallenge.outputs.forEach((name, idx) => {
         components.push(new Component(600, 100 + (idx * 80), 'OUTPUT', `OUT_${name}`, `Output ${name}`));
     });
@@ -477,7 +476,6 @@ document.getElementById('btn-run-test').addEventListener('click', () => {
     overlay.classList.remove('hidden');
     card.className = 'tutorial-card test-card';
 
-    // Find our I/O components by ID
     const inComps = {};
     const outComps = {};
     activeChallenge.inputs.forEach(n => inComps[n] = components.find(c => c.id === `IN_${n}`));
@@ -485,20 +483,16 @@ document.getElementById('btn-run-test').addEventListener('click', () => {
 
     let allPassed = true;
 
-    // Evaluate Truth Table
     activeChallenge.table.forEach((row, index) => {
         term.innerHTML += `\n[T=${index}] Applying Inputs: ` + JSON.stringify(row.in) + "\n";
         
-        // Force inputs
         Object.keys(row.in).forEach(key => {
             inComps[key].state = row.in[key];
             inComps[key].pins[0].value = row.in[key];
         });
 
-        // Run simulation
         propagateCircuit();
 
-        // Check outputs
         Object.keys(row.out).forEach(key => {
             const expected = row.out[key];
             const actual = outComps[key].state;
@@ -524,7 +518,6 @@ document.getElementById('btn-run-test').addEventListener('click', () => {
 
 document.getElementById('test-close').addEventListener('click', () => {
     document.getElementById('test-overlay').classList.add('hidden');
-    // Reset inputs to 0 after test
     if (activeChallenge) {
         activeChallenge.inputs.forEach(n => {
             let c = components.find(comp => comp.id === `IN_${n}`);
@@ -534,7 +527,6 @@ document.getElementById('test-close').addEventListener('click', () => {
     }
 });
 
-// UI Cleanup
 document.getElementById('btn-clear').addEventListener('click', () => {
     if (confirm("Clear the entire circuit canvas?")) {
         components = []; wires = []; activeWireStartPin = null; 
@@ -544,5 +536,4 @@ document.getElementById('btn-clear').addEventListener('click', () => {
     }
 });
 
-// Launch app
 render();
